@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express";
+import { registerUser, authUser } from "../controllers/userController";
 const router = express.Router();
 
-router.get("/user", async (req: Request, res: Response) => {
-  res.send({ msg: "Hello World" });
-});
+router.post("/register", ...registerUser);
+router.post("/login", authUser);
 
 export default router;
