@@ -2,6 +2,7 @@ import express from "express";
 import { configDotenv } from "dotenv";
 import logger from "morgan";
 import connectToApp from "./config/starting";
+import { errorHandler, notFound } from "./middleware/errorHandler";
 //Importing Router
 import userRouter from "./routes/userRoutes";
 
@@ -18,3 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/", userRouter);
+
+app.use(notFound);
+app.use(errorHandler);
+
+export default app;
