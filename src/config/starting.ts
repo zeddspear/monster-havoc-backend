@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 
 export default async function connectToApp(app: Application) {
   const port = process.env.PORT || 8200;
+
   const mongooseUri = process.env.MONGO_URI;
 
   try {
