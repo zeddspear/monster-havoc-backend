@@ -2,6 +2,7 @@ import expressAsyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 import User from "../models/User";
+import generateToken from "../utils/generateJWT";
 
 export const registerUser = [
   [
@@ -51,14 +52,18 @@ export const authUser = expressAsyncHandler(
       const user = await User.findOne({ email });
       //@ts-ignore
       if (user && (await user.checkPassword(password))) {
+        generateToken(res, user._id.toString());
         res
           .status(201)
           .json({ id: user._id, email: user.email, name: user.name });
       } else {
-        res.status(400).json({ error: "Email or Password is incorrect!" });
+        // res.status(400).json({ error: "Email or Password is incorrect!" });
+        throw new Error("Email or Password is incorrect!");
       }
     } catch (error) {
-      res.json({ error: `Error occured while logging in: ${error}` });
+      res
+        .status(400)
+        .json({ error: `Error occured while logging in: ${error}` });
     }
   }
 );
