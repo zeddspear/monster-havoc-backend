@@ -1,6 +1,7 @@
 import express from "express";
 import { configDotenv } from "dotenv";
 import logger from "morgan";
+import cors from "cors";
 import connectToApp from "./config/starting";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 //Importing Router
@@ -14,6 +15,8 @@ let app = express();
 connectToApp(app);
 
 app.use(logger("dev"));
+
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
