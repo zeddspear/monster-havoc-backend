@@ -4,6 +4,7 @@ import { body, validationResult } from "express-validator";
 import User from "../models/User";
 import generateToken from "../utils/generateJWT";
 
+//Signup
 export const registerUser = [
   [
     body("email").isEmail().withMessage("Invalid email address"),
@@ -45,6 +46,7 @@ export const registerUser = [
   }),
 ];
 
+//Login
 export const authUser = expressAsyncHandler(
   async (req: Request, res: Response) => {
     try {
@@ -64,6 +66,24 @@ export const authUser = expressAsyncHandler(
       res
         .status(400)
         .json({ error: `Error occured while logging in: ${error}` });
+    }
+  }
+);
+
+//Logout
+export const logout = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      // Clear the authentication cookie
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+
+      res.status(200).json({ message: "Logged out successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Logout failed", error: error.message });
     }
   }
 );
