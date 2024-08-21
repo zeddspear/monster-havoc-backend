@@ -76,7 +76,7 @@ export const logout = expressAsyncHandler(
     try {
       // Clear the authentication cookie
       res.clearCookie("jwt", {
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
       });
