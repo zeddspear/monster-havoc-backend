@@ -87,3 +87,25 @@ export const logout = expressAsyncHandler(
     }
   }
 );
+
+//Get UserData
+
+export const getUserData = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      const { _id } = req.body;
+      const user = await User.findOne({ _id });
+
+      if (user) {
+        res.status(200).json({
+          message: "User Data Fetched successfully",
+          userData: { _id: user._id, email: user.email, name: user.name },
+        });
+      } else {
+        throw new Error("Error occured finding user");
+      }
+    } catch (error) {
+      res.status(400).json(error);
+    }
+  }
+);
