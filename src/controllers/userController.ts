@@ -57,7 +57,7 @@ export const authUser = expressAsyncHandler(
         generateToken(res, user._id.toString());
         res
           .status(201)
-          .json({ id: user._id, email: user.email, name: user.name });
+          .json({ _id: user._id, email: user.email, name: user.name });
       } else {
         // res.status(400).json({ error: "Email or Password is incorrect!" });
         throw new Error("Email or Password is incorrect!");
