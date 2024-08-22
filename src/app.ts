@@ -6,6 +6,7 @@ import connectToApp from "./config/starting";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 //Importing Router
 import userRouter from "./routes/userRoutes";
+import monsterRouter from "./routes/monsterRoutes";
 
 configDotenv();
 
@@ -27,6 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/", userRouter);
+app.use("/api", monsterRouter);
 
 app.use(notFound);
 app.use(errorHandler);
