@@ -39,7 +39,8 @@ export const getUserMonsters = expressAsyncHandler(
 export const addMonster = expressAsyncHandler(
   async (req: Request, res: Response) => {
     const { name, img, type, description, abilities, stats, evolution } =
-      req.body;
+      req.body.values;
+
     try {
       let newMonster = await Monster.create({
         name,

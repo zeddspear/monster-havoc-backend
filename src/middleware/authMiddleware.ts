@@ -28,8 +28,7 @@ const protect = expressAsyncHandler(
         throw new Error(error.message);
       }
     } else {
-      res.status(401);
-      throw new Error("Not authorized, no token");
+      res.status(401).json({ message: "Not authorized, no token" });
     }
   }
 );
