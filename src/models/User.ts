@@ -19,7 +19,7 @@ let userSchema = new Schema(
     },
     monsters: {
       type: Schema.Types.ObjectId,
-      ref: "monster",
+      ref: "monsters",
       required: false,
     },
   },

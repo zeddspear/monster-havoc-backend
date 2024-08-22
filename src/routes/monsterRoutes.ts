@@ -9,6 +9,6 @@ import checkAdmin from "../middleware/checkAdmin";
 const router = express.Router();
 
 router.get("/getAllMonsters", protect, getAllMonsters);
-router.post("/getUserMonsters", protect, getUserMonsters);
+router.get("/getUserMonsters", protect, getUserMonsters);
 router.post("/addMonster", protect, checkAdmin, addMonster);
 export default router;
