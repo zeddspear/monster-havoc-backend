@@ -3,6 +3,16 @@ import { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 import User from "../models/User";
 import generateToken from "../utils/generateJWT";
+import { Types } from "mongoose";
+interface CustomRequest extends Request {
+  user?: tokenUserType; // Adjust the type based on your User model
+}
+
+export type tokenUserType = {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+};
 
 //Signup
 export const registerUser = [
@@ -54,7 +64,12 @@ export const authUser = expressAsyncHandler(
       const user = await User.findOne({ email });
       //@ts-ignore
       if (user && (await user.checkPassword(password))) {
-        generateToken(res, user._id.toString());
+        const tokenUser = {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+        };
+        generateToken(res, tokenUser as tokenUserType);
         res
           .status(201)
           .json({ _id: user._id, email: user.email, name: user.name });
@@ -91,15 +106,12 @@ export const logout = expressAsyncHandler(
 //Get UserData
 
 export const getUserData = expressAsyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: CustomRequest, res: Response) => {
     try {
-      const { _id } = req.body;
-      const user = await User.findOne({ _id });
-
-      if (user) {
+      if (req.user) {
         res.status(200).json({
           message: "User Data Fetched successfully",
-          userData: { _id: user._id, email: user.email, name: user.name },
+          userData: req.user,
         });
       } else {
         throw new Error("Error occured finding user");

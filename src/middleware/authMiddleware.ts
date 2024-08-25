@@ -16,12 +16,13 @@ const protect = expressAsyncHandler(
 
     if (token) {
       try {
-        const decoded: jwt.JwtPayload = jwt.verify(
+        const decodedUser: jwt.JwtPayload = jwt.verify(
           token,
           process.env.JWT_SECRET!
         ) as jwt.JwtPayload;
 
-        req.user = await User.findById(decoded.userID).select("-password");
+        // req.user = await User.findById(decoded.userID).select("-password"); Before when only Id was used for JWT
+        req.user = decodedUser;
 
         if (!req.user) {
           res.status(401);

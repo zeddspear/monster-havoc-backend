@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import { Response } from "express";
+import { tokenUserType } from "../controllers/userController";
 
-const generateToken = (res: Response, userID: string) => {
-  const token = jwt.sign({ userID }, process.env.JWT_SECRET, {
+const generateToken = (res: Response, user: tokenUserType) => {
+  const token = jwt.sign({ user }, process.env.JWT_SECRET, {
     expiresIn: "1d",
   });
 
