@@ -88,3 +88,30 @@ export const addMonster = expressAsyncHandler(
     }
   }
 );
+
+export const addUserMonster = expressAsyncHandler(
+  async (req: CustomRequest, res: Response) => {
+    try {
+      const { monsterId } = req.body;
+
+      // Update the user's monsters array by adding the monsterId
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        { $addToSet: { monsters: monsterId } }, // Add monsterId to the monsters array
+        { new: true } // Return the updated document
+      );
+
+      if (!updatedUser) {
+        res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json({
+        message: "Monster added successfully",
+        user: updatedUser,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "An error occurred" });
+    }
+  }
+);

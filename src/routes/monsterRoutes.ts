@@ -3,6 +3,7 @@ import {
   getAllMonsters,
   getUserMonsters,
   addMonster,
+  addUserMonster,
 } from "../controllers/monsterController";
 import protect from "../middleware/authMiddleware";
 import checkAdmin from "../middleware/checkAdmin";
@@ -11,4 +12,5 @@ const router = express.Router();
 router.get("/getAllMonsters", getAllMonsters);
 router.get("/getUserMonsters", protect, getUserMonsters);
 router.post("/addMonster", protect, checkAdmin, addMonster);
+router.patch("/addUserMonster", protect, addUserMonster);
 export default router;
