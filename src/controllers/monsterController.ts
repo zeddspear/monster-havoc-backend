@@ -107,7 +107,7 @@ export const addUserMonster = expressAsyncHandler(
 
       res.status(200).json({
         message: "Monster added successfully",
-        user: updatedUser,
+        monsters: updatedUser.monsters,
       });
     } catch (error) {
       console.error(error);
