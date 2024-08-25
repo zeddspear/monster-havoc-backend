@@ -22,7 +22,7 @@ const protect = expressAsyncHandler(
         ) as jwt.JwtPayload;
 
         // req.user = await User.findById(decoded.userID).select("-password"); Before when only Id was used for JWT
-        req.user = decodedUser;
+        req.user = decodedUser.user;
 
         if (!req.user) {
           res.status(401);
