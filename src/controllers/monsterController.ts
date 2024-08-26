@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Monster from "../models/Monster";
 import User from "../models/User";
+import Evolution from "../models/Evolution";
 
 // Extend the Request interface to include the user property
 interface CustomRequest extends Request {
@@ -31,29 +32,60 @@ export const getAllMonsters = expressAsyncHandler(
     }
   }
 );
+
 export const getUserMonsters = expressAsyncHandler(
   async (req: CustomRequest, res: Response) => {
     try {
+      const userId = req.user._id;
+
+      // Fetch the user's evolutions and populate monster details
       const result = await User.aggregate([
         // Match the specific user by ID
-        { $match: { _id: new mongoose.Types.ObjectId(req.user._id) } },
+        { $match: { _id: new mongoose.Types.ObjectId(userId) } },
 
-        // Perform a lookup to populate the monsters array
+        // Lookup to get evolution documents
         {
           $lookup: {
-            from: "monsters", // collection name in MongoDB
-            localField: "monsters",
-            foreignField: "_id",
-            as: "populatedMonsters",
+            from: "evolutions", // collection name in MongoDB
+            localField: "monsters", // This field should be an array of ObjectIds
+            foreignField: "_id", // The field in the 'evolutions' collection to match with
+            as: "evolutionDetails",
           },
         },
 
-        // Project to include only the populatedMonsters array
-        { $project: { populatedMonsters: 1, _id: 0 } },
+        // Unwind to deconstruct the evolutionDetails array
+        { $unwind: "$evolutionDetails" },
+
+        // Lookup to get the monster details from the Evolution documents
+        {
+          $lookup: {
+            from: "monsters", // collection name in MongoDB
+            localField: "evolutionDetails.monsterId", // This should be ObjectId
+            foreignField: "_id", // The field in the 'monsters' collection to match with
+            as: "monsterDetails",
+          },
+        },
+
+        // Unwind to deconstruct the monsterDetails array
+        { $unwind: "$monsterDetails" },
+
+        // Project to include only the necessary fields
+        {
+          $project: {
+            _id: 0,
+            evolutionMonsters: {
+              monster: "$monsterDetails",
+              abilities: "$evolutionDetails.abilities",
+              monsterLevel: "$evolutionDetails.monsterLevel",
+            },
+          },
+        },
       ]);
 
+      console.log(result, "result");
+
       const availableMonsters = result.length
-        ? result[0].populatedMonsters
+        ? result.map((item) => item.evolutionMonsters)
         : [];
       res.status(200).json({ monsters: availableMonsters });
     } catch (error) {
@@ -91,27 +123,81 @@ export const addMonster = expressAsyncHandler(
 
 export const addUserMonster = expressAsyncHandler(
   async (req: CustomRequest, res: Response) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
       const { monsterId } = req.body;
+      const userId = req.user._id;
 
-      // Update the user's monsters array by adding the monsterId
+      // Fetch abilities
+      const monstAbilities = await getAbilities(monsterId, 1);
+
+      // Create new evolution
+      const newEvolution = await Evolution.create(
+        [
+          {
+            monsterId: monsterId,
+            userId: userId,
+            abilities: monstAbilities,
+            monsterLevel: 1,
+          },
+        ],
+        { session }
+      );
+
+      // Update the user's monsters array
       const updatedUser = await User.findByIdAndUpdate(
-        req.user._id,
-        { $addToSet: { monsters: monsterId } }, // Add monsterId to the monsters array
-        { new: true } // Return the updated document
+        userId,
+        { $addToSet: { monsters: newEvolution[0]._id } },
+        { new: true, session }
       );
 
       if (!updatedUser) {
-        res.status(404).json({ message: "User not found" });
+        throw new Error("User not found");
       }
+
+      await session.commitTransaction();
+      session.endSession();
 
       res.status(200).json({
         message: "Monster added successfully",
         monsters: updatedUser.monsters,
       });
     } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
       console.error(error);
       res.status(500).json({ message: "An error occurred" });
     }
   }
 );
+
+async function getAbilities(monsterId: string, monsterLvl: number) {
+  try {
+    // Perform aggregation to get filtered abilities
+    const result = await Monster.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(monsterId) } }, // Match the monster by ID
+      {
+        $project: {
+          abilities: {
+            $filter: {
+              input: "$abilities",
+              as: "ability",
+              cond: { $lte: ["$$ability.unlocksAt", monsterLvl] }, // Filter abilities where unlocksAt <= monsterLvl
+            },
+          },
+        },
+      },
+    ]);
+
+    if (result.length === 0) {
+      throw new Error("Monster not found");
+    }
+
+    return result[0].abilities;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error fetching abilities");
+  }
+}

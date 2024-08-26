@@ -1,6 +1,13 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
+const abilitySchema = new Schema({
+  name: { type: String, required: true },
+  power: { type: Number, required: true },
+  type: { type: String, required: true },
+  unlockedAt: { type: Number, required: true, max: 0, min: 10 },
+});
+
 const monsterSchema = new Schema(
   {
     name: {
@@ -20,7 +27,7 @@ const monsterSchema = new Schema(
       required: true,
     },
     abilities: {
-      type: [String],
+      type: [abilitySchema],
       required: true,
     },
     stats: {

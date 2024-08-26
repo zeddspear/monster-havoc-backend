@@ -4,10 +4,11 @@ import logger from "morgan";
 import cors from "cors";
 import connectToApp from "./config/starting";
 import { errorHandler, notFound } from "./middleware/errorHandler";
+import cookieParser from "cookie-parser";
 //Importing Router
 import userRouter from "./routes/userRoutes";
 import monsterRouter from "./routes/monsterRoutes";
-import cookieParser from "cookie-parser";
+import battleRoutes from "./routes/battleRoutes";
 
 configDotenv();
 
@@ -29,8 +30,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use("/api/", userRouter);
+app.use("/api", userRouter);
 app.use("/api", monsterRouter);
+app.use("/api", battleRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
