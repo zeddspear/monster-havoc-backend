@@ -5,6 +5,8 @@ import cors from "cors";
 import connectToApp from "./config/starting";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 import cookieParser from "cookie-parser";
+import http from "http";
+import { Server } from "socket.io";
 //Importing Router
 import userRouter from "./routes/userRoutes";
 import monsterRouter from "./routes/monsterRoutes";
@@ -14,14 +16,23 @@ configDotenv();
 
 let app = express();
 
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: `${process.env.FRONTEND_URL}`,
+    methods: ["GET", "POST"],
+  },
+});
+
 // connecting to app
-connectToApp(app);
+connectToApp(app, io, server);
 
 app.use(logger("dev"));
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: `${process.env.FRONTEND_URL}`,
     credentials: true,
   })
 );
