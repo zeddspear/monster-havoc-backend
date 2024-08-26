@@ -19,6 +19,10 @@ export const joinMatchmakingQueue = expressAsyncHandler(
     // Add user to the matchmaking queue with a timestamp
     await redis.zadd("matchmakingQueue", Date.now(), userId);
 
+    // Retrieve and log the current matchmaking queue
+    const queue = await redis.zrange("matchmakingQueue", 0, -1, "WITHSCORES");
+    console.log("Current Matchmaking Queue:", queue);
+
     res
       .status(200)
       .json({ message: "You have been added to the matchmaking queue" });
