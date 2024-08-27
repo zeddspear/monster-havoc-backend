@@ -2,6 +2,7 @@ import expressAsyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import Redis from "ioredis";
 import { Server } from "socket.io";
+import { emitToUser } from "../utils/socketFunctions";
 
 // Initialize Redis client
 const redis = new Redis();
@@ -48,11 +49,11 @@ async function attemptMatchmaking(io: Server) {
     await redis.zrem("matchmakingQueue", JSON.stringify(player1));
     await redis.zrem("matchmakingQueue", JSON.stringify(player2));
 
-    console.log("Sockets: ", io.sockets);
-
     // Notify both users via Socket.IO
-    io.to(player1._id).emit("match_found", player2);
-    io.to(player2._id).emit("match_found", player1);
+    // io.to(player1._id).emit("match_found", player2);
+    // io.to(player2._id).emit("match_found", player1);
+    emitToUser(io, player1._id, "match_found", player2);
+    emitToUser(io, player2._id, "match_found", player1);
 
     console.log(`Match found: ${player1.name} vs ${player2.name}`);
   }
