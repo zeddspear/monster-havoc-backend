@@ -13,19 +13,18 @@ redis.connect(() => {
 });
 
 interface MatchmakingRequest extends Request {
-  user: { _id: string; name: string };
+  user: { _id: string; name: string; email: string };
 }
 
 export const joinMatchmakingQueue = (io: Server) =>
   expressAsyncHandler(async (req: MatchmakingRequest, res: Response) => {
-    const userId = req.user._id;
-    const username = req.user.name;
+    const { _id, name, email } = req.user;
 
     // Add user to the matchmaking queue with a timestamp
     await redis.zadd(
       "matchmakingQueue",
       Date.now(),
-      JSON.stringify({ _id: userId, username })
+      JSON.stringify({ _id, name, email })
     );
 
     // Try to find a match
@@ -49,10 +48,12 @@ async function attemptMatchmaking(io: Server) {
     await redis.zrem("matchmakingQueue", JSON.stringify(player1));
     await redis.zrem("matchmakingQueue", JSON.stringify(player2));
 
+    console.log("Sockets: ", io.sockets);
+
     // Notify both users via Socket.IO
     io.to(player1._id).emit("match_found", player2);
     io.to(player2._id).emit("match_found", player1);
 
-    console.log(`Match found: ${player1.username} vs ${player2.username}`);
+    console.log(`Match found: ${player1.name} vs ${player2.name}`);
   }
 }

@@ -43,7 +43,7 @@ app.use(cookieParser());
 
 app.use("/api", userRouter);
 app.use("/api", monsterRouter);
-app.use("/api", battleRoutes);
+app.use("/api", battleRoutes(io));
 
 app.use(notFound);
 app.use(errorHandler);

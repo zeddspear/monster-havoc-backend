@@ -1,8 +1,14 @@
 import { Router } from "express";
 import protect from "../middleware/authMiddleware";
 import { joinMatchmakingQueue } from "../controllers/battleController";
-const router = Router();
+import { Server } from "socket.io";
 
-router.post("/joinMatchMakingQueue", protect, joinMatchmakingQueue);
+const battleRoutes = (io: Server) => {
+  const router = Router();
 
-export default router;
+  router.post("/joinMatchMakingQueue", protect, joinMatchmakingQueue(io));
+
+  return router;
+};
+
+export default battleRoutes;
