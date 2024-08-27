@@ -27,6 +27,8 @@ export const joinMatchmakingQueue = (io: Server) =>
       Date.now(),
       JSON.stringify({ _id, name, email })
     );
+    const queue = await redis.zrange("matchmakingQueue", 0, -1);
+    console.log("Retrieved queue:", queue);
 
     // Try to find a match
     await attemptMatchmaking(io);
