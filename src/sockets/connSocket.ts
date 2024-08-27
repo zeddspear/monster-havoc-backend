@@ -1,4 +1,5 @@
 import { Server, Socket } from "socket.io";
+import { attemptMatchmaking } from "../controllers/battleController";
 
 export const userSocketMap = new Map<string, string>(); // Map<userId, socketId>
 
@@ -15,6 +16,10 @@ export function socketConnection(io: Server) {
 
       //   // Optionally, join a room with the user ID
       //   socket.join(playerId);
+    });
+
+    socket.on("attempt_matchmaking", async () => {
+      await attemptMatchmaking(io);
     });
 
     socket.on("disconnect", () => {

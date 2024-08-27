@@ -30,15 +30,12 @@ export const joinMatchmakingQueue = (io: Server) =>
     const queue = await redis.zrange("matchmakingQueue", 0, -1);
     console.log("Retrieved queue:", queue);
 
-    // Try to find a match
-    await attemptMatchmaking(io);
-
     res
       .status(200)
       .json({ message: "You have been added to the matchmaking queue" });
   });
 
-async function attemptMatchmaking(io: Server) {
+export async function attemptMatchmaking(io: Server) {
   // Retrieve the queue (all users sorted by join time)
   const queue = await redis.zrange("matchmakingQueue", 0, -1);
 
