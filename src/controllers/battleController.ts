@@ -51,6 +51,7 @@ export async function attemptMatchmaking(io: Server) {
     // Notify both users via Socket.IO
     // io.to(player1._id).emit("match_found", player2);
     // io.to(player2._id).emit("match_found", player1);
+
     emitToUser(io, player1._id, "match_found", player2);
     emitToUser(io, player2._id, "match_found", player1);
 
