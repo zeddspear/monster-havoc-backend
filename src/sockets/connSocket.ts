@@ -5,6 +5,7 @@ import {
   startCountdown,
 } from "../controllers/battleController";
 import { emitToUser } from "../utils/socketFunctions";
+import { SocketListener } from "./SocketEnums";
 
 export const userSocketMap = new Map<string, string>(); // Map<userId, socketId>
 
@@ -12,7 +13,7 @@ export function socketConnection(io: Server) {
   io.on("connection", (socket: Socket) => {
     console.log("A user connected:", socket.id);
 
-    socket.on("register_player", (playerId) => {
+    socket.on(SocketListener.Register_Player, (playerId) => {
       // Store the mapping of user ID to socket ID
       userSocketMap.set(playerId, socket.id);
 
@@ -20,16 +21,22 @@ export function socketConnection(io: Server) {
       //   socket.join(playerId);
     });
 
-    socket.on("monster_selected", async (monster, playerId: string) => {
-      await monsterSelect(io, monster, playerId);
-    });
+    socket.on(
+      SocketListener.Monster_Select,
+      async (monster, playerId: string) => {
+        await monsterSelect(io, monster, playerId);
+      }
+    );
 
-    socket.on("select_monster_countdown_start", async (playerId: string) => {
-      // Start the countdown when a player joins the monster selection page
-      await startCountdown(io, playerId);
-    });
+    socket.on(
+      SocketListener.Monster_Select_Countdown,
+      async (playerId: string) => {
+        // Start the countdown when a player joins the monster selection page
+        await startCountdown(io, playerId);
+      }
+    );
 
-    socket.on("attempt_matchmaking", async () => {
+    socket.on(SocketListener.Attempt_Matchmaking, async () => {
       await attemptMatchmaking(io);
     });
 

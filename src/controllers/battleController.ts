@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import Redis from "ioredis";
 import { Server } from "socket.io";
 import { emitToUser } from "../utils/socketFunctions";
+import { SocketEmitter } from "../sockets/SocketEnums";
 
 //Monster type
 type abilitiesType = {
@@ -75,8 +76,8 @@ export async function attemptMatchmaking(io: Server) {
     // io.to(player1._id).emit("match_found", player2);
     // io.to(player2._id).emit("match_found", player1);
 
-    emitToUser(io, player1._id, "match_found", player2);
-    emitToUser(io, player2._id, "match_found", player1);
+    emitToUser(io, player1._id, SocketEmitter.Match_Found, player2);
+    emitToUser(io, player2._id, SocketEmitter.Match_Found, player1);
 
     console.log(`Match found: ${player1.name} vs ${player2.name}`);
   }
@@ -109,12 +110,12 @@ export async function monsterSelect(
       .split(":")[1];
 
     // Emit an event to both players with the selected monsters
-    emitToUser(io, playerId, "start_battle", {
+    emitToUser(io, playerId, SocketEmitter.Start_Battle, {
       playerMonster: playerSelectionMap[playerId],
       opponentMonster: playerSelectionMap[opponentId],
     });
 
-    emitToUser(io, opponentId, "start_battle", {
+    emitToUser(io, opponentId, SocketEmitter.Start_Battle, {
       playerMonster: playerSelectionMap[opponentId],
       opponentMonster: playerSelectionMap[playerId],
     });
@@ -132,7 +133,12 @@ export async function startCountdown(io: Server, playerId: string) {
     countdown--;
 
     // Emit the countdown to the player's room (or to both players)
-    emitToUser(io, playerId, "countdown_update", countdown);
+    emitToUser(
+      io,
+      playerId,
+      SocketEmitter.Monster_Select_Countdown_Update,
+      countdown
+    );
 
     if (countdown <= 0) {
       clearInterval(countdownInterval);
