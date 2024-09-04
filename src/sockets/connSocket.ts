@@ -1,10 +1,10 @@
 import { Server, Socket } from "socket.io";
 import {
   attemptMatchmaking,
-  monsterSelect,
+  getMatchData,
+  startBattle,
   startCountdown,
 } from "../controllers/battleController";
-import { emitToUser } from "../utils/socketFunctions";
 import { SocketListener } from "./SocketEnums";
 
 export const userSocketMap = new Map<string, string>(); // Map<userId, socketId>
@@ -22,9 +22,9 @@ export function socketConnection(io: Server) {
     });
 
     socket.on(
-      SocketListener.Monster_Select,
+      SocketListener.Start_Battle,
       async (monster, playerId: string) => {
-        await monsterSelect(io, monster, playerId);
+        await startBattle(io, monster, playerId);
       }
     );
 
@@ -38,6 +38,10 @@ export function socketConnection(io: Server) {
 
     socket.on(SocketListener.Attempt_Matchmaking, async () => {
       await attemptMatchmaking(io);
+    });
+
+    socket.on(SocketListener.Get_Match_Data, async (playerId: string) => {
+      await getMatchData(io, playerId);
     });
 
     socket.on("disconnect", () => {
